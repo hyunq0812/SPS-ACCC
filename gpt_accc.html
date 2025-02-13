@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>충돌 데이터 MAP - Samsong</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  
+  <!-- Leaflet Marker Cluster Plugin -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #eef1f5;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      background-color: #2C3E50;
+      color: white;
+      padding: 15px;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+    .header img {
+      height: 60px;
+      margin-right: 20px;
+    }
+    .container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1E252B;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      font-size: 22px;
+      color: white;
+    }
+    .sidebar a {
+      color: white;
+      font-size: 18px;
+      text-decoration: none;
+      margin: 10px 0;
+      display: block;
+      padding: 10px 15px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+    .sidebar a:hover {
+      background-color: #34495E;
+    }
+    .map-container {
+      flex: 1;
+      position: relative;
+      padding: 10px;
+    }
+    #map {
+      width: 100%;
+      height: 600px;
+      border-radius: 10px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+    .file-upload {
+      margin: 20px;
+    }
+    .info-panel {
+      width: 350px;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    .info-panel h3 {
+      font-size: 22px;
+      color: #2C3E50;
+    }
+    .upload-btn {
+      background-color: #2C3E50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+      transition: 0.3s;
+    }
+    .upload-btn:hover {
+      background-color: #1A5276;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="./images/samsong_logo.png" alt="Samsong Logo"> 충돌 데이터 MAP
+  </div>
+  
+  <div class="file-upload" id="uploadSection">
+    <label class="upload-btn">
+      엑셀 파일 업로드
+      <input type="file" id="fileInput" accept=".xlsx" hidden />
+    </label>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <h2>Menu</h2>
+      <a href="#" class="menu" data-section="map">비충돌 데이터 MAP</a>
+      <a href="#" class="menu" data-section="grid">비충돌 데이터 Grid</a>
+      <a href="#" class="menu" data-section="edit">비충돌 데이터 입력/수정</a>
+      <a href="#" class="menu" data-section="upload">비충돌 데이터 Excel 입력</a>
+    </div>
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+    <div class="info-panel" id="infoPanel">
+      <h3>사고 정보</h3>
+      <p><strong>날짜:</strong> <span id="accidentDate">N/A</span></p>
+      <p><strong>사고 타입:</strong> <span id="accidentType">N/A</span></p>
+      <p><strong>도로명 주소:</strong> <span id="roadName">N/A</span></p>
+      <p><strong>상황 설명:</strong> <span id="situationDescription">N/A</span></p>
+      <p><strong>관련 동영상:</strong> <a id="videoLink" href="#" target="_blank">N/A</a></p>
+    </div>
+  </div>
+
+  <script>
+    var map = L.map('map').setView([37.4, 126.99], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 마커 클러스터 그룹 생성
+    var markers = L.markerClusterGroup();
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      var file = event.target.files[0];
+      var reader = new FileReader();
+      
+      reader.onload = function(event) {
+        var data = new Uint8Array(event.target.result);
+        var workbook = XLSX.read(data, { type: 'array' });
+        var sheetName = workbook.SheetNames[0];
+        var sheet = workbook.Sheets[sheetName];
+        var jsonData = XLSX.utils.sheet_to_json(sheet);
+
+        jsonData.forEach(function(row) {
+          let specialCondition = row["1.01"] || "";
+          if (specialCondition.includes("특이사항없음") || specialCondition.includes("주행 테스트")) {
+            return; // 조건 충족 시 마커 추가 안함
+          }
+
+          let lat = parseFloat(row["1.7"]);
+          let lon = parseFloat(row["1.8"]);
+          if (!isNaN(lat) && !isNaN(lon)) {
+            var marker = L.marker([lat, lon]);
+
+            marker.on('click', function() {
+              document.getElementById('accidentDate').innerText = row["1.3"] + '-' + row["1.4"] + '-' + row["1.5"];
+              document.getElementById('accidentType').innerText = row["1.12"] || "N/A";
+              document.getElementById('roadName').innerText = row["1.31"] || "N/A";
+              document.getElementById('situationDescription').innerText = row["1.10"] || "N/A";
+              let videoFile = row["1.01"] || "N/A";
+              document.getElementById('videoLink').href = `./videos/${videoFile}.mp4`;
+              document.getElementById('videoLink').innerText = videoFile;
+            });
+
+            markers.addLayer(marker); // 클러스터 그룹에 마커 추가
+          }
+        });
+
+        map.addLayer(markers); // 지도에 클러스터 추가
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+</body>
+</html>
