@@ -1,189 +1,494 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>충돌 데이터 MAP - Samsong</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-  
-  <!-- Leaflet Marker Cluster Plugin -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+  <title>비충돌 데이터 MAP</title>
+  <!-- 구글 폰트/아이콘 -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- XLSX -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- Google Maps + MarkerCluster -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8UBtKnkeivt08HnA9nRuqQZ6QIYTVSZ0" async defer></script>
+  <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js" async></script>
 
   <style>
-    body {
-      font-family: 'Noto Sans', sans-serif;
+    /* 기본 리셋 */
+    * {
       margin: 0;
       padding: 0;
-      background-color: #eef1f5;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
     }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+    /* 헤더(상단) */
     .header {
+      height: 60px;
+      background: #fff;
       display: flex;
       align-items: center;
-      background-color: #2C3E50;
-      color: white;
-      padding: 15px;
-      font-size: 1.8em;
-      font-weight: bold;
+      padding: 0 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-shrink: 0;
     }
-    .header img {
-      height: 60px;
-      margin-right: 20px;
-    }
-    .container {
+    .header .left-menu {
       display: flex;
-      height: calc(100vh - 60px);
+      align-items: center;
     }
+    .menu-icon {
+      cursor: pointer;
+      margin-right: 1rem;
+    }
+    /* 헤더 로고: ./logo.png 사용, 크기를 80px로 확대, alt 속성 제거 */
+    .header-logo {
+      width: 80px;
+      height: 80px;
+      margin-right: 1rem;
+    }
+    .title {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    /* 메인 영역 */
+    .content {
+      flex: 1;
+      overflow: auto;
+      background: #fff;
+      padding: 1rem;
+    }
+    .page-section {
+      display: none;
+    }
+    .page-section.active {
+      display: block;
+    }
+    /* 지도/위성 토글 */
+    .map-toggle {
+      margin-bottom: 0.5rem;
+    }
+    .map-toggle button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.7rem;
+      margin-right: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .map-toggle button:hover {
+      background: #2980b9;
+    }
+    /* 지도 */
+    #map {
+      width: 100%;
+      height: 500px;
+      background: #ddd;
+    }
+    /* 좌측 사이드바 */
     .sidebar {
-      width: 250px;
-      background-color: #1E252B;
-      color: white;
-      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100%;
+      background: #2c3e50;
+      color: #ecf0f1;
+      transform: translateX(-260px);
+      transition: transform 0.3s ease;
+      z-index: 999;
       display: flex;
       flex-direction: column;
     }
-    .sidebar h2 {
-      font-size: 22px;
-      color: white;
+    .sidebar.open {
+      transform: translateX(0);
     }
-    .sidebar a {
-      color: white;
-      font-size: 18px;
-      text-decoration: none;
-      margin: 10px 0;
-      display: block;
-      padding: 10px 15px;
-      border-radius: 5px;
-      transition: 0.3s;
+    .sidebar-header {
+      background: #34495e;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .sidebar a:hover {
-      background-color: #34495E;
+    .sidebar-header .logo {
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.2rem;
     }
-    .map-container {
-      flex: 1;
-      position: relative;
-      padding: 10px;
+    /* 좌측 사이드바 로고 이미지 제거 */
+    .sidebar-header .logo img {
+      display: none;
     }
-    #map {
-      width: 100%;
-      height: 600px;
-      border-radius: 10px;
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    }
-    .file-upload {
-      margin: 20px;
-    }
-    .info-panel {
-      width: 350px;
-      background: white;
-      padding: 20px;
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
-      border-radius: 10px;
-      font-size: 16px;
-    }
-    .info-panel h3 {
-      font-size: 22px;
-      color: #2C3E50;
-    }
-    .upload-btn {
-      background-color: #2C3E50;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
+    .close-btn {
       cursor: pointer;
-      display: inline-block;
-      transition: 0.3s;
+      font-size: 1.4rem;
+      color: #ecf0f1;
+      background: none;
+      border: none;
     }
-    .upload-btn:hover {
-      background-color: #1A5276;
+    .menu-group {
+      padding: 1rem;
+    }
+    .menu-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      opacity: 0.7;
+    }
+    .submenu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.5rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      border-radius: 4px;
+      background: #3b4a58;
+      transition: background 0.2s;
+    }
+    .submenu-toggle:hover {
+      background: #4a5966;
+    }
+    .submenu-toggle span {
+      display: flex;
+      align-items: center;
+    }
+    .submenu-toggle i {
+      margin-right: 0.3rem;
+    }
+    .submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      margin-left: 0.5rem;
+    }
+    .submenu.open {
+      max-height: 200px;
+    }
+    .submenu-item {
+      padding: 0.3rem 1rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 4px;
+      margin: 0.2rem 0;
+      transition: background 0.2s;
+    }
+    .submenu-item:hover {
+      background: #4a5966;
+    }
+    .submenu-item .circle {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #ecf0f1;
+      margin-right: 0.5rem;
+    }
+    .submenu-item.active .circle {
+      background: #ecf0f1;
+    }
+    /* 우측 상세 패널 (마커 클릭 시) */
+    .info-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: #f8f8f8;
+      border-left: 1px solid #ccc;
+      padding: 1rem;
+      z-index: 999;
+      overflow: auto;
+      display: none;
+    }
+    .info-panel.open {
+      display: block;
+    }
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .info-header h3 {
+      margin: 0;
+    }
+    .info-close-btn {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #999;
+    }
+    .info-row {
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+      margin-right: 0.2rem;
+    }
+    /* 동영상 재생 컨테이너 */
+    .video-container {
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width:768px){
+      .sidebar {
+        width:200px; transform:translateX(-200px);
+      }
+      .sidebar.open {
+        transform:translateX(0);
+      }
+      .info-panel {
+        width:220px;
+      }
     }
   </style>
 </head>
 <body>
+
+<div class="wrapper">
+  <!-- 헤더 -->
   <div class="header">
-    <img src="./images/samsong_logo.png" alt="Samsong Logo"> 충돌 데이터 MAP
-  </div>
-  
-  <div class="file-upload" id="uploadSection">
-    <label class="upload-btn">
-      엑셀 파일 업로드
-      <input type="file" id="fileInput" accept=".xlsx" hidden />
-    </label>
-  </div>
-  
-  <div class="container">
-    <div class="sidebar">
-      <h2>Menu</h2>
-      <a href="#" class="menu" data-section="map">비충돌 데이터 MAP</a>
-      <a href="#" class="menu" data-section="grid">비충돌 데이터 Grid</a>
-      <a href="#" class="menu" data-section="edit">비충돌 데이터 입력/수정</a>
-      <a href="#" class="menu" data-section="upload">비충돌 데이터 Excel 입력</a>
+    <div class="left-menu">
+      <span class="material-icons menu-icon" onclick="openSidebar()">menu</span>
+      <!-- 헤더 로고: ./logo.png 사용, alt 속성 제거, 크기는 80px -->
+      <img src="./logo.png" class="header-logo" />
+      <span class="title">Home</span>
     </div>
-    <div class="map-container">
+  </div>
+
+  <!-- 메인 영역 -->
+  <div class="content">
+    <!-- [MAP] -->
+    <section id="pageMap" class="page-section active">
+      <h2>비충돌 데이터 MAP</h2>
+      <h3>비충돌 데이터 MAP</h3>
+      <div class="map-toggle">
+        <button onclick="setMapType('roadmap')">지도</button>
+        <button onclick="setMapType('satellite')">위성</button>
+      </div>
       <div id="map"></div>
+    </section>
+
+    <!-- [GRID] -->
+    <section id="pageGrid" class="page-section">
+      <h2>비충돌 데이터 관리 Grid</h2>
+      <p>Grid(표) 기능</p>
+    </section>
+
+    <!-- [업/수정] -->
+    <section id="pageUpload" class="page-section">
+      <h2>비충돌 데이터 관리 업/수정</h2>
+      <p>폴더 선택(webkitdirectory) → 동영상 파일들 로드</p>
+      <div>
+        <label>동영상 폴더:</label>
+        <input type="file" webkitdirectory multiple id="videoFolder" />
+        <button onclick="saveVideoFolder()">저장</button>
+      </div>
+    </section>
+
+    <!-- [EXCEL 입력] -->
+    <section id="pageExcel" class="page-section">
+      <h2>비충돌 데이터 Excel 입력</h2>
+      <p>
+        6행부터 / A=0, B=1 공란 skip / <b>C=2=동영상파일명</b><br/>
+        M=12=위도, N=13=경도, D=3=날짜(앞10), S=18=사고유형, P=15=상황, AK=36=도로명
+      </p>
+      <button onclick="loadExcelData()">엑셀 데이터 로드</button>
+    </section>
+  </div>
+</div>
+
+<!-- 좌측 사이드바 -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <!-- 좌측 사이드바 로고 제거: 로고 이미지 태그 삭제 -->
+      Samsong
     </div>
-    <div class="info-panel" id="infoPanel">
-      <h3>사고 정보</h3>
-      <p><strong>날짜:</strong> <span id="accidentDate">N/A</span></p>
-      <p><strong>사고 타입:</strong> <span id="accidentType">N/A</span></p>
-      <p><strong>도로명 주소:</strong> <span id="roadName">N/A</span></p>
-      <p><strong>상황 설명:</strong> <span id="situationDescription">N/A</span></p>
-      <p><strong>관련 동영상:</strong> <a id="videoLink" href="#" target="_blank">N/A</a></p>
+    <button class="close-btn" onclick="closeSidebar()">✖</button>
+  </div>
+  <div class="menu-group">
+    <div class="menu-title">Dash Board</div>
+    <div class="submenu-toggle" onclick="toggleSubmenu()">
+      <span>
+        <i class="material-icons">directions_car</i>
+        비충돌 데이터 관리
+      </span>
+      <span class="material-icons">expand_more</span>
+    </div>
+    <div class="submenu" id="bcSubmenu">
+      <div class="submenu-item" onclick="onSubmenuClick('map')">
+        <div class="circle"></div>
+        비충돌 데이터 MAP
+      </div>
+      <div class="submenu-item" onclick="onSubmenuClick('grid')">
+        <div class="circle"></div>
+        비충돌 데이터 관리 Grid
+      </div>
+      <div class="submenu-item" onclick="onSubmenuClick('upload')">
+        <div class="circle"></div>
+        비충돌 데이터 관리 업/수정
+      </div>
+      <div class="submenu-item" onclick="onSubmenuClick('excel')">
+        <div class="circle"></div>
+        비충돌 데이터 Excel 입력
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    var map = L.map('map').setView([37.4, 126.99], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+<!-- 우측 상세 패널 -->
+<div class="info-panel" id="infoPanel">
+  <div class="info-header">
+    <h3>상세 정보</h3>
+    <button class="info-close-btn" onclick="closeInfoPanel()">X</button>
+  </div>
+  <div class="info-row">
+    <span class="info-label">날짜:</span> <span id="infoDate"></span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">사고유형:</span> <span id="infoAccident"></span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">상황:</span> <span id="infoSituation"></span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">도로명:</span> <span id="infoRoad"></span>
+  </div>
+  <!-- 우측 상세 패널 내 동영상 재생 컨테이너 (동영상 있으면 바로 재생) -->
+  <div class="video-container" id="infoVideoContainer">
+    <!-- video 요소가 생성되어 바로 재생됩니다. -->
+  </div>
+</div>
 
-    // 마커 클러스터 그룹 생성
-    var markers = L.markerClusterGroup();
+<script>
+  let map;
+  let markerCluster;
+  let isMapInitialized = false;
 
-    document.getElementById('fileInput').addEventListener('change', function(event) {
-      var file = event.target.files[0];
-      var reader = new FileReader();
-      
-      reader.onload = function(event) {
-        var data = new Uint8Array(event.target.result);
-        var workbook = XLSX.read(data, { type: 'array' });
-        var sheetName = workbook.SheetNames[0];
-        var sheet = workbook.Sheets[sheetName];
-        var jsonData = XLSX.utils.sheet_to_json(sheet);
+  // 업로드된 데이터: { lat, lng, date, accident, situation, road, video }
+  let uploadedCoordinates = [];
+  let markers = [];
 
-        jsonData.forEach(function(row) {
-          let specialCondition = row["1.01"] || "";
-          if (specialCondition.includes("특이사항없음") || specialCondition.includes("주행 테스트")) {
-            return; // 조건 충족 시 마커 추가 안함
-          }
+  function openSidebar(){
+    document.getElementById('sidebar').classList.add('open');
+  }
+  function closeSidebar(){
+    document.getElementById('sidebar').classList.remove('open');
+  }
+  function toggleSubmenu(){
+    document.getElementById('bcSubmenu').classList.toggle('open');
+  }
+  function onSubmenuClick(page){
+    closeSidebar();
+    document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+    const items = document.querySelectorAll('.submenu-item');
+    switch(page){
+      case 'map': items[0].classList.add('active'); break;
+      case 'grid': items[1].classList.add('active'); break;
+      case 'upload': items[2].classList.add('active'); break;
+      case 'excel': items[3].classList.add('active'); break;
+    }
+    document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+    if(page === 'map'){
+      document.getElementById('pageMap').classList.add('active');
+      refreshMarkers();
+    } else if(page === 'grid'){
+      document.getElementById('pageGrid').classList.add('active');
+    } else if(page === 'upload'){
+      document.getElementById('pageUpload').classList.add('active');
+    } else if(page === 'excel'){
+      document.getElementById('pageExcel').classList.add('active');
+    }
+  }
 
-          let lat = parseFloat(row["1.7"]);
-          let lon = parseFloat(row["1.8"]);
-          if (!isNaN(lat) && !isNaN(lon)) {
-            var marker = L.marker([lat, lon]);
+  // 상세 패널 열/닫
+  function openInfoPanel(){
+    document.getElementById('infoPanel').classList.add('open');
+  }
+  function closeInfoPanel(){
+    document.getElementById('infoPanel').classList.remove('open');
+  }
+  function updateInfoPanel(coord){
+    document.getElementById('infoDate').textContent = coord.date || "";
+    document.getElementById('infoAccident').textContent = coord.accident || "";
+    document.getElementById('infoSituation').textContent = coord.situation || "";
+    document.getElementById('infoRoad').textContent = coord.road || "";
+    
+    const videoContainer = document.getElementById('infoVideoContainer');
+    videoContainer.innerHTML = "";
+    
+    // Excel의 C열에 기록된 동영상 파일명(경로 포함 가능)에서 파일명만 추출하고 소문자, trim() 적용
+    let videoFileName = coord.video;
+    if (videoFileName) {
+      videoFileName = videoFileName.split(/[/\\]/).pop().trim().toLowerCase();
+    }
+    console.log("요청한 동영상 파일명:", videoFileName);
+    
+    // GitHub Pages에 있는 동영상 파일 경로 설정
+    const videoPath = `videos/${videoFileName}`;
+    
+    const videoElem = document.createElement("video");
+    videoElem.controls = true;
+    videoElem.autoplay = true;
+    videoElem.src = videoPath;
+    videoElem.style.width = "100%";
+    videoElem.style.maxWidth = "250px";
+    videoElem.style.height = "150px";
+    videoContainer.appendChild(videoElem);
+  }
 
-            marker.on('click', function() {
-              document.getElementById('accidentDate').innerText = row["1.3"] + '-' + row["1.4"] + '-' + row["1.5"];
-              document.getElementById('accidentType').innerText = row["1.12"] || "N/A";
-              document.getElementById('roadName').innerText = row["1.31"] || "N/A";
-              document.getElementById('situationDescription').innerText = row["1.10"] || "N/A";
-              let videoFile = row["1.01"] || "N/A";
-              document.getElementById('videoLink').href = `./videos/${videoFile}.mp4`;
-              document.getElementById('videoLink').innerText = videoFile;
-            });
-
-            markers.addLayer(marker); // 클러스터 그룹에 마커 추가
-          }
-        });
-
-        map.addLayer(markers); // 지도에 클러스터 추가
-      };
-      reader.readAsArrayBuffer(file);
+  // 지도 초기화
+  function initMap(){
+    if(isMapInitialized) return;
+    isMapInitialized = true;
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat: 35.8, lng: 127.7},
+      zoom: 7,
+      mapTypeId: 'roadmap'
     });
-  </script>
-</body>
-</html>
+    markerCluster = new markerClusterer.MarkerClusterer({ map, markers: [] });
+  }
+  function setMapType(type){
+    if(!isMapInitialized) return;
+    map.setMapTypeId(type);
+  }
+
+  // 엑셀 데이터 로드
+  function loadExcelData(){
+    const url = 'tesla_data3%20-%20%EB%B3%B5%EC%82%AC%EB%B3%B8.xlsx'; // 엑셀 파일의 GitHub 경로
+    fetch(url)
+      .then(response => response.arrayBuffer())
+      .then(data => {
+        const wb = XLSX.read(data, {type:'array'});
+        const sheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+        
+        uploadedCoordinates = [];
+        for(let i = 5; i < rows.length; i++){
+          const row = rows[i];
+          if(!row) continue;
+          
+          let valA = String(row[0] ?? "").trim();
+          let valB = String(row[1] ?? "").trim();
+          if(!valA || !valB) continue;
+          
+          const lat = parse
