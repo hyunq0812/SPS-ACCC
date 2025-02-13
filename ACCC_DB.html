@@ -1,0 +1,523 @@
+﻿<!DOCTYPE html>
+<ltml lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>(경10)자율차 사고분석SW 개발</title>
+  <style>
+    body{
+      width: 100%;
+      height: 500px;
+    }
+    .header{
+      width: 100%;
+      height: 20%;
+      font-size: 3.5em;
+      text-align: left;
+    }
+    .body{
+      display: flex;
+      height: 1000px;
+    }
+    .map{
+      width: 60%;
+    }
+    .map_md{
+      width: 60%;
+    }
+    .map_pd{
+      width: 60%;
+    }
+    .map_litt{
+      width: 60%;
+    }
+    .leftSideBar{
+      width: 10%;
+    }
+    .rightSideBar{
+      width: 28%;
+      overflow: auto;
+      padding-left: 20px;
+    }
+    .rightSideBar1{
+      width: 28%;
+      overflow: auto;
+      padding-left: 20px;
+    }
+    .rightSideBar2{
+      width: 28%;
+      overflow: auto;
+      padding-left: 20px;
+    }
+    .footer{
+      width: 100%;
+      height: 100px;
+      padding-top: 10px;
+    }
+    .show2{
+      color: gray;
+      font-size: 16px;
+    }
+    .show3{
+      color: gray;
+      font-size: 16px;
+    }
+    .show4{
+      color: blue;
+      font-size: 16px;
+    }
+    .show5{
+      color: blue;
+      font-size: 16px;
+    }
+    p#under_lind {
+      border-bottom: 1px dashed #ddd;
+      text-align-last: left;
+      color: gray;
+    }
+    a {
+      text-decoration:none;
+      color: gray;
+      font-size: 16px;
+    }
+  </style>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+  <script src="https://unpkg.com/@googlemaps/markerclustererplus/dist/index.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+  <script>
+    let map;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementsByClassName("map")[0], {
+        center: { lat: 37.4, lng: 126.99 },
+        zoom: 10,
+
+      });
+
+      // console.log(window.corona.data.virusInfo);
+      var markers = [];
+      window.cdb.data.virusInfo.forEach(function(item){
+          // console.log( item.location.lat, item.location.lng );
+          if (!item.location.lat || !item.location.lng) {
+              // console.log(item.location.lat, item.location.lng);
+          }
+          else {
+              var myLatLng = { lat: item.location.lat, lng: item.location.lng };
+              var marker = new google.maps.Marker({
+                  position: myLatLng,
+                  map: map,
+                  title: (item.idx).toString(),
+                  label: (item.acctype).toString()
+              });
+
+              markers.push(marker);
+
+          }
+
+
+
+          marker.addListener("click", () => {
+            map.setZoom(15);
+            map.setCenter(marker.getPosition());
+            console.log(marker.getPosition());
+            document.getElementById('idx').innerHTML=item.idx;
+            document.getElementById('acctype').innerHTML=item.acctype;
+            document.getElementById('colltype').innerHTML=item.colltype;
+            document.getElementById('roadtype').innerHTML=item.roadtype;
+            document.getElementById('roadsurf').innerHTML=item.roadsurf;
+            document.getElementById('roadcond').innerHTML=item.roadcond;
+            document.getElementById('lightcon').innerHTML=item.lightcon;
+            document.getElementById('weather').innerHTML=item.weather;
+            document.getElementById('accdesc').innerHTML=item.accdesc;
+            document.getElementById('datetime').innerHTML=item.datetime;
+            document.getElementById('vsim').innerHTML=item.vsim;
+            document.getElementById('rawdata').innerHTML=item.rawdata;
+          });
+
+
+      });
+
+      //인포윈도우
+      var infowindow = new google.maps.InfoWindow();
+
+      var markerCluster = new MarkerClusterer(map, markers,
+          {
+              imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+              gridSize: 100,
+              zoomOnClick: true,
+              maxZoom: 10,
+          }
+      );
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+  map_md = new google.maps.Map(document.getElementsByClassName("map_md")[0], {
+    center: { lat: 36.764564, lng: 127.966405 },
+    zoom: 7,
+  });
+
+  // console.log(window.corona.data.virusInfo);
+  var markers = [];
+  window.mdb.data.virusInfo.forEach(function(item){
+      // console.log( item.location.lat, item.location.lng );
+      if (!item.location.lat || !item.location.lng) {
+          // console.log(item.location.lat, item.location.lng);
+      }
+      else {
+          var myLatLng = { lat: item.location.lat, lng: item.location.lng };
+          var marker = new google.maps.Marker({
+              position: myLatLng,
+              map_md: map_md,
+              title: (item.idx).toString(),
+              label: (item.type).toString()
+          });
+
+          markers.push(marker);
+
+      }
+
+
+
+      marker.addListener("click", () => {
+        map.setZoom(15);
+        map.setCenter(marker.getPosition());
+        console.log(marker.getPosition());
+        document.getElementById('name').innerHTML=item.idx;
+        document.getElementById('type').innerHTML=item.type;
+        document.getElementById('address').innerHTML=item.address;
+        document.getElementById('ins_1').innerHTML=item.ins_1;
+        document.getElementById('ins_2').innerHTML=item.ins_2;
+        document.getElementById('knia_1').innerHTML=item.knia_1;
+        document.getElementById('knia_2').innerHTML=item.knia_2;
+        document.getElementById('knia_3').innerHTML=item.knia_3;
+        document.getElementById('court_1').innerHTML=item.court_1;
+        document.getElementById('court_2').innerHTML=item.court_2;
+        document.getElementById('court_3').innerHTML=item.court_3;
+        document.getElementById('fin').innerHTML=item.fin;
+        // document.getElementById('thumbnail').innerHTML=item.thumbnail;
+        document.getElementById('description').innerHTML=item.description;
+        document.getElementById('vsim').innerHTML=item.vsim;
+        document.getElementById('vbox').innerHTML=item.vbox;
+        document.getElementById('pd_db').innerHTML=item.pd_db;
+        document.getElementById('acc_thumbnail').span.innerHTML="item.idx";
+      });
+
+
+  });
+
+  //인포윈도우
+  var infowindow = new google.maps.InfoWindow();
+
+  var markerCluster = new MarkerClusterer(map_md, markers,
+      {
+          imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+          gridSize: 100,
+          zoomOnClick: true,
+          maxZoom: 10,
+      }
+  );
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+  //인포윈도우
+  var infowindow = new google.maps.InfoWindow();
+
+  var markerCluster = new MarkerClusterer(map_pd, markers,
+      {
+          imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+          gridSize: 100,
+          zoomOnClick: true,
+          maxZoom: 10,
+      }
+  );
+}
+
+//////////////////////////////
+
+
+
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+map_litt = new google.maps.Map(document.getElementsByClassName("map_litt")[0], {
+    center: { lat: 36.764564, lng: 127.966405 },
+    zoom: 7,
+  });
+
+  // console.log(window.corona.data.virusInfo);
+  var markers = [];
+  window.litt.data.virusInfo.forEach(function(item){
+      // console.log( item.location.lat, item.location.lng );
+      if (!item.location.lat || !item.location.lng) {
+          // console.log(item.location.lat, item.location.lng);
+      }
+      else {
+          var myLatLng = { lat: item.location.lat, lng: item.location.lng };
+          var marker = new google.maps.Marker({
+              position: myLatLng,
+              map_litt: map_litt,
+              title: (item.idx).toString(),
+              label: (item.type).toString()
+          });
+
+          markers.push(marker);
+
+      }
+
+
+
+      marker.addListener("click", () => {
+        map.setZoom(15);
+        map.setCenter(marker.getPosition());
+        console.log(marker.getPosition());
+        document.getElementById('name').innerHTML=item.idx;
+        document.getElementById('type').innerHTML=item.type;
+        document.getElementById('address').innerHTML=item.address;
+        document.getElementById('ins_1').innerHTML=item.ins_1;
+        document.getElementById('ins_2').innerHTML=item.ins_2;
+        document.getElementById('knia_1').innerHTML=item.knia_1;
+        document.getElementById('knia_2').innerHTML=item.knia_2;
+        document.getElementById('knia_3').innerHTML=item.knia_3;
+        document.getElementById('court_1').innerHTML=item.court_1;
+        document.getElementById('court_2').innerHTML=item.court_2;
+        document.getElementById('court_3').innerHTML=item.court_3;
+        document.getElementById('fin').innerHTML=item.fin;
+        // document.getElementById('thumbnail').innerHTML=item.thumbnail;
+        document.getElementById('description').innerHTML=item.description;
+        document.getElementById('vsim').innerHTML=item.vsim;
+        document.getElementById('vbox').innerHTML=item.vbox;
+        document.getElementById('pd_db').innerHTML=item.pd_db;
+        document.getElementById('acc_thumbnail').span.innerHTML="item.idx";
+      });
+
+
+  });
+
+  //인포윈도우
+  var infowindow = new google.maps.InfoWindow();
+
+  var markerCluster = new MarkerClusterer(map_litt, markers,
+      {
+          imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+          gridSize: 100,
+          zoomOnClick: true,
+          maxZoom: 10,
+      }
+  );
+
+
+//
+//////////////////////
+
+
+  </script>
+
+
+
+</head>
+
+<body>
+  <div class="header">
+    Automotive Collision Case Catalog
+  </div>
+
+  <div class="body">
+    <div class="leftSideBar">
+      <p>
+        <div class="show1" style="padding-bottom: 5px; padding-left:5px;">
+          <span><a onClick="window.location.reload()" style="cursor: pointer;">ACCC-DB</a></span><br>
+        </div>
+        <div class="show2" style="padding-bottom: 3px; padding-left:5px;">
+          <span style="cursor: pointer;">└ 실사고 Database</span><br>
+        </div>
+        <div class="show4" style="padding-bottom: 3px;  padding-left:5px;">
+          <span style="cursor: pointer;">└ 국토교통기술대전</span><br>
+        </div>
+
+      </p>   <!-- Accident DB on Map -->
+    </div>
+
+
+    <div class="map"></div>
+    <div class="map_md"></div>
+    <div class="map_pd"></div>
+    <div class="map_litt"></div>
+
+    <div class="rightSideBar">
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspACCC-No.:&nbsp&nbsp<span id="idx">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp사고유형:&nbsp&nbsp<span id="acctype">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp충돌유형:&nbsp&nbsp<span id="colltype">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp도로구분:&nbsp&nbsp<span id="roadtype">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp노면재질:&nbsp&nbsp<span id="roadsurf">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp노면상태:&nbsp&nbsp<span id="roadcond">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp조명상태:&nbsp&nbsp<span id="lightcon">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp날씨:&nbsp&nbsp<span id="weather">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp이벤트발생일시:&nbsp&nbsp<span id="datetime">N/A</span></p>
+      <!-- <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp사고내용:&nbsp&nbsp<span id="accdesc">N/A</span></p> -->
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp블랙박스영상:&nbsp&nbsp<span id="vsim">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp원본다운로드:&nbsp&nbsp<span id='rawdata'>N/A</span></p>
+      <p style="color: gray;">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp이벤트내용:&nbsp&nbsp</p>
+      <p id="under_lind" style="padding-left: 30px;">&nbsp&nbsp<span id="accdesc">N/A</span></p>
+      <!-- <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp<span id='thumbnail'><img src="https://diy-story.com/custom_html/20110101.gif" width=90%;></span></p> -->
+    </div>
+
+
+    <div class="rightSideBar1">
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspACCC-No.:&nbsp&nbsp<span id="name">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp사고유형:&nbsp&nbsp<span id="type">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp보험사(우리):&nbsp&nbsp<span id="ins_1">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp보험사(상대):&nbsp&nbsp<span id="ins_2">N/A</span></p>
+      <p id="under_lind">분심위(대표협의):&nbsp&nbsp<span id="knia_1">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp분심위(소심의):&nbsp&nbsp<span id="knia_2">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp분심위(재심의):&nbsp&nbsp<span id="knia_3">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp법원(제1심):&nbsp&nbsp<span id="court_1">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp법원(항소심):&nbsp&nbsp<span id="court_2">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp법원(상고심):&nbsp&nbsp<span id="court_3">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp최종과실:&nbsp&nbsp<span id="fin" style="color: red;">N/A</span></p>
+      <!-- <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp<span id='thumbnail'>N/A</span></p> -->
+      <p style="color: gray;">사고장소:&nbsp&nbsp</p>
+      <p id="under_lind">&nbsp&nbsp<span id="address">N/A</span></p>
+      <p style="color: gray;">사고내용:&nbsp&nbsp</p>
+      <p id="under_lind">&nbsp&nbsp<span id="description">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp&nbsp&nbsp&nbsp블랙박스영상:&nbsp&nbsp<span id="vbox">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp시뮬레이션영상:&nbsp&nbsp<span id="vsim">N/A</span></p>
+      <p id="under_lind">&nbsp&nbsp디지털 판례집:&nbsp&nbsp<span id='pd_db'>N/A</span></p>
+    </div>
+
+
+  </div>
+
+  <!--
+  <div class="footer">footer</div>
+  -->
+
+
+
+  <script type="text/javascript">
+        $(document).ready(function() {
+        $('.map_md').show();
+        $('.map_pd').hide();
+        $('.map_litt').hide();
+        $('.map').hide();
+        $('.rightSideBar1').show();
+        $('.rightSideBar').hide();
+        $('.rightSideBar2').hide();
+
+        $('.show2').click(function(){
+        $('.map_md').show();
+        $('.map_pd').hide();
+        $('.map_litt').hide();
+        $('.map').hide();
+        $('.rightSideBar1').show();
+        $('.rightSideBar').hide();
+        $('.rightSideBar2').hide();
+        });
+
+        $('.show3').click(function(){
+        $('.map_pd').show();
+        $('.map_md').hide();
+        $('.map_litt').hide();
+        $('.map').hide();
+        $('.rightSideBar1').show();
+        $('.rightSideBar').hide();
+        $('.rightSideBar2').hide();
+        });
+
+        $('.show4').click(function(){
+        $('.map').show();
+        $('.map_md').hide();
+        $('.map_litt').hide();
+        $('.map_pd').hide();
+        $('.rightSideBar').show();
+        $('.rightSideBar1').hide();
+        $('.rightSideBar2').hide();
+      });
+
+        $('.show5').click(function(){
+        $('.map').show();
+        $('.map_md').hide();
+        $('.map_litt').hide();
+        $('.map_pd').hide();
+        $('.rightSideBar').hide();
+        $('.rightSideBar1').hide();
+        $('.rightSideBar2').show();
+      });
+
+    });
+  </script>
+
+
+
+    <script src="DB/cdb.js"></script>
+    <script src="DB/mdb.js"></script>
+    <script src="DB/litt.js"></script>    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDv5uhYLLz_mc5LHo2EVIyQqSsVAIC4P-U&callback=initMap&region=kr&libraries=&v=weekly" async></script>
+
+  <!--
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDv5uhYLLz_mc5LHo2EVIyQqSsVAIC4P-U&callback=initMap&region=kr&libraries=&v=weekly" async></script>
+  -->
+
+    <script>
+      function youtubeFullscreen(url){
+              window.open(url,"","fullscreen,scrollbars")
+      }
+    </script>
+</body>
