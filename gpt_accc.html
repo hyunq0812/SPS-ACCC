@@ -14,7 +14,6 @@
   <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js" async></script>
 
   <style>
-    /* 기본 리셋 */
     * {
       margin: 0;
       padding: 0;
@@ -33,7 +32,6 @@
       width: 100%;
       height: 100%;
     }
-    /* 헤더(상단) */
     .header {
       height: 60px;
       background: #fff;
@@ -51,7 +49,6 @@
       cursor: pointer;
       margin-right: 1rem;
     }
-    /* 헤더 로고: ./logo.png 사용, 크기를 80px로 확대, alt 속성 제거 */
     .header-logo {
       width: 80px;
       height: 80px;
@@ -61,7 +58,6 @@
       font-size: 1.2rem;
       font-weight: 500;
     }
-    /* 메인 영역 */
     .content {
       flex: 1;
       overflow: auto;
@@ -74,7 +70,6 @@
     .page-section.active {
       display: block;
     }
-    /* 지도/위성 토글 */
     .map-toggle {
       margin-bottom: 0.5rem;
     }
@@ -90,13 +85,11 @@
     .map-toggle button:hover {
       background: #2980b9;
     }
-    /* 지도 */
     #map {
       width: 100%;
       height: 500px;
       background: #ddd;
     }
-    /* 좌측 사이드바 */
     .sidebar {
       position: fixed;
       top: 0;
@@ -127,7 +120,6 @@
       font-weight: bold;
       font-size: 1.2rem;
     }
-    /* 좌측 사이드바 로고 이미지 제거 */
     .sidebar-header .logo img {
       display: none;
     }
@@ -200,7 +192,6 @@
     .submenu-item.active .circle {
       background: #ecf0f1;
     }
-    /* 우측 상세 패널 (마커 클릭 시) */
     .info-panel {
       position: fixed;
       top: 0;
@@ -242,7 +233,6 @@
       color: #555;
       margin-right: 0.2rem;
     }
-    /* 동영상 재생 컨테이너 */
     .video-container {
       margin-top: 0.5rem;
       margin-bottom: 1rem;
@@ -263,19 +253,15 @@
 <body>
 
 <div class="wrapper">
-  <!-- 헤더 -->
   <div class="header">
     <div class="left-menu">
       <span class="material-icons menu-icon" onclick="openSidebar()">menu</span>
-      <!-- 헤더 로고: ./logo.png 사용, alt 속성 제거, 크기는 80px -->
       <img src="./logo.png" class="header-logo" />
       <span class="title">Home</span>
     </div>
   </div>
 
-  <!-- 메인 영역 -->
   <div class="content">
-    <!-- [MAP] -->
     <section id="pageMap" class="page-section active">
       <h2>비충돌 데이터 MAP</h2>
       <h3>비충돌 데이터 MAP</h3>
@@ -286,24 +272,21 @@
       <div id="map"></div>
     </section>
 
-    <!-- [GRID] -->
     <section id="pageGrid" class="page-section">
       <h2>비충돌 데이터 관리 Grid</h2>
       <p>Grid(표) 기능</p>
     </section>
 
-    <!-- [업/수정] -->
     <section id="pageUpload" class="page-section">
       <h2>비충돌 데이터 관리 업/수정</h2>
       <p>폴더 선택(webkitdirectory) → 동영상 파일들 로드</p>
       <div>
         <label>동영상 폴더:</label>
         <input type="file" webkitdirectory multiple id="videoFolder" />
-        <button onclick="saveVideoFolder()">저장</button>
+        <button onclick="loadVideos()">로드</button>
       </div>
     </section>
 
-    <!-- [EXCEL 입력] -->
     <section id="pageExcel" class="page-section">
       <h2>비충돌 데이터 Excel 입력</h2>
       <p>
@@ -315,13 +298,9 @@
   </div>
 </div>
 
-<!-- 좌측 사이드바 -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo">
-      <!-- 좌측 사이드바 로고 제거: 로고 이미지 태그 삭제 -->
-      Samsong
-    </div>
+    <div class="logo">Samsong</div>
     <button class="close-btn" onclick="closeSidebar()">✖</button>
   </div>
   <div class="menu-group">
@@ -354,7 +333,6 @@
   </div>
 </div>
 
-<!-- 우측 상세 패널 -->
 <div class="info-panel" id="infoPanel">
   <div class="info-header">
     <h3>상세 정보</h3>
@@ -372,10 +350,7 @@
   <div class="info-row">
     <span class="info-label">도로명:</span> <span id="infoRoad"></span>
   </div>
-  <!-- 우측 상세 패널 내 동영상 재생 컨테이너 (동영상 있으면 바로 재생) -->
-  <div class="video-container" id="infoVideoContainer">
-    <!-- video 요소가 생성되어 바로 재생됩니다. -->
-  </div>
+  <div class="video-container" id="infoVideoContainer"></div>
 </div>
 
 <script>
@@ -383,7 +358,6 @@
   let markerCluster;
   let isMapInitialized = false;
 
-  // 업로드된 데이터: { lat, lng, date, accident, situation, road, video }
   let uploadedCoordinates = [];
   let markers = [];
 
@@ -419,7 +393,6 @@
     }
   }
 
-  // 상세 패널 열/닫
   function openInfoPanel(){
     document.getElementById('infoPanel').classList.add('open');
   }
@@ -435,15 +408,13 @@
     const videoContainer = document.getElementById('infoVideoContainer');
     videoContainer.innerHTML = "";
     
-    // Excel의 C열에 기록된 동영상 파일명(경로 포함 가능)에서 파일명만 추출하고 소문자, trim() 적용
     let videoFileName = coord.video;
     if (videoFileName) {
       videoFileName = videoFileName.split(/[/\\]/).pop().trim().toLowerCase();
     }
     console.log("요청한 동영상 파일명:", videoFileName);
     
-    // GitHub Pages에 있는 동영상 파일 경로 설정
-    const videoPath = `videos/${videoFileName}`;
+    const videoPath = `${videoFileName}`;
     
     const videoElem = document.createElement("video");
     videoElem.controls = true;
@@ -455,7 +426,6 @@
     videoContainer.appendChild(videoElem);
   }
 
-  // 지도 초기화
   function initMap(){
     if(isMapInitialized) return;
     isMapInitialized = true;
@@ -471,9 +441,8 @@
     map.setMapTypeId(type);
   }
 
-  // 엑셀 데이터 로드
   function loadExcelData(){
-    const url = 'tesla_data3%20-%20%EB%B3%B5%EC%82%AC%EB%B3%B8.xlsx'; // 엑셀 파일의 GitHub 경로
+    const url = 'tesla_data3%20-%20%EB%B3%B5%EC%82%AC%EB%B3%B8.xlsx';
     fetch(url)
       .then(response => response.arrayBuffer())
       .then(data => {
@@ -491,4 +460,49 @@
           let valB = String(row[1] ?? "").trim();
           if(!valA || !valB) continue;
           
-          const lat = parse
+          const lat = parseFloat(row[12] ?? "");
+          const lng = parseFloat(row[13] ?? "");
+          if(isNaN(lat) || isNaN(lng)) continue;
+          
+          let rawDate = String(row[3] ?? "").trim();
+          let dateOnly = (rawDate.length >= 10) ? rawDate.substring(0, 10) : rawDate;
+          
+          let accident = String(row[18] ?? "").trim();
+          let situation = String(row[15] ?? "").trim();
+          let road = String(row[36] ?? "").trim();
+          let videoFile = String(row[2] ?? "").trim();
+          
+          uploadedCoordinates.push({
+            lat, lng,
+            date: dateOnly,
+            accident,
+            situation,
+            road,
+            video: videoFile
+          });
+        }
+        alert(uploadedCoordinates.length + "개 좌표 로드됨(엑셀)");
+      })
+      .catch(err => {
+        console.error("엑셀 데이터 로드 오류:", err);
+        alert("엑셀 데이터 로드 오류: " + err.message);
+      });
+  }
+
+  function refreshMarkers(){
+    if(!isMapInitialized) initMap();
+    
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    markerCluster.clearMarkers();
+    
+    for(const coord of uploadedCoordinates){
+      const marker = new google.maps.Marker({
+        position: {lat: coord.lat, lng: coord.lng},
+        label: {
+          text: coord.accident,
+          color: 'white',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }
+     
