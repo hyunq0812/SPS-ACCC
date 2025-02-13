@@ -10,7 +10,7 @@
   <!-- XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- Google Maps + MarkerCluster -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8UBtKnkeivt08HnA9nRuqQZ6QIYTVSZ0" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY" async defer></script>
   <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js" async></script>
 
   <style>
@@ -482,6 +482,7 @@
           });
         }
         alert(uploadedCoordinates.length + "개 좌표 로드됨(엑셀)");
+        refreshMarkers();
       })
       .catch(err => {
         console.error("엑셀 데이터 로드 오류:", err);
@@ -505,4 +506,6 @@
           fontSize: '14px',
           fontWeight: 'bold'
         }
-     
+      });
+      marker.addListener('click', () => {
+        updateInfo
