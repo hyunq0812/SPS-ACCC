@@ -442,7 +442,7 @@
   }
 
   function loadExcelData(){
-    const url = 'https://github.com/hyunq0812/SPS-ACCC/raw/main/tesla_data3%20-%20%EB%B3%B5%EC%82%AC%EB%B3%B8.xlsx';
+    const url = 'https://github.com/hyunq0812/SPS-ACCC/raw/main/테슬라전국데이터_2_샘플.xlsx';
     fetch(url)
       .then(response => response.arrayBuffer())
       .then(data => {
@@ -521,4 +521,4 @@
   
   window.onload = function(){
     document.getElementById('pageMap').classList.add('active');
-    document.querySelector
+    document.querySelectorAll('.submenu-item')[0].classList.add
