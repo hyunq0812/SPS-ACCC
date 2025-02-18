@@ -226,7 +226,7 @@
   <!-- 로그인 오버레이 -->
   <div id="loginOverlay">
     <div id="loginHeader">
-      <img src="./logo.png" alt="삼송 로고">
+      <img src="https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/main/logo.png" alt="삼송 로고">
       <h1>SAMSONG</h1>
     </div>
     <form id="loginForm">
@@ -242,7 +242,7 @@
     <div class="header">
       <div class="left-menu">
         <span class="material-icons menu-icon" onclick="openSidebar()">menu</span>
-        <img src="./logo.png" class="header-logo" />
+        <img src="https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/main/logo.png" alt="삼성 로고">
         <span class="title">Home</span>
       </div>
     </div>
@@ -478,7 +478,7 @@
     // 엑셀 로드
     async function fetchExcelFromGitHub(){
       try {
-        const url = "https://raw.githubusercontent.com/KrCreed/samsong/main/테슬라전국데이터_2%20-%20복사본.xlsx";
+        const url = "https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/main/tesla_data.xlsx"
         const response = await fetch(url);
         if(!response.ok) throw new Error("Network response was not ok: " + response.status);
         const arrayBuffer = await response.arrayBuffer();
@@ -498,9 +498,9 @@
           if(isNaN(lat) || isNaN(lng)) continue;
           let rawDate = String(row[3]??"").trim();
           let dateOnly = (rawDate.length>=10)?rawDate.substring(0,10):rawDate;
-          let accident = String(row[18]??"").trim();
+          let accident = String(row[17]??"").trim();
           let situation = String(row[15]??"").trim();
-          let road = String(row[36]??"").trim();
+          let road = String(row[35]??"").trim();
           let videoFile = String(row[2]??"").trim();
           uploadedCoordinates.push({
             lat, lng,
@@ -540,7 +540,7 @@
         }
       }
       if(videoFileName){
-        const rawUrl = "https://github.com/KrCreed/samsong/raw/main/videos/" + videoFileName;
+        const rawUrl = "https://github.com/hyunq0812/SPS-ACCC/raw/main/Video/" + videoFileName;
         const videoElem = document.createElement("video");
         videoElem.controls = true;
         videoElem.autoplay = true;
