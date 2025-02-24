@@ -16,6 +16,17 @@
   <!-- Firebase App 및 Firebase Auth (compat 버전) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+// 개발자 도구 경고 메시지
+console.log("%c이 콘솔을 열지 마세요!", "color: red; font-size: 20px;");
+
+// F12, Ctrl+Shift+I 차단
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+    }
+});
+</script>
   
   <style>
     /* 기본 리셋 */
