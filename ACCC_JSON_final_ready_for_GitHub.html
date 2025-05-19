@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>ACCC JSON 지도</title>
+  <style>#map { width: 100%; height: 90vh; }</style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB86fhLyjTezPAfXW6Y1qPAZkDeyfoTmk8"></script>
+</head>
+<body>
+  <h2>📍 ACCC 마커 지도 (JSON 기반)</h2>
+  <div id="map"></div>
+  <script>
+    let uploadedCoordinates = [];
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.5, lng: 127 },
+        zoom: 10
+      });
+      fetch("https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/0de662ce91d6f6b1f1c98a00f83be7fc684ede9b/tesla_data_compact.json")
+        .then(res => res.json())
+        .then(data => {
+          data.forEach(d => {
+            const lat = parseFloat(d.lat);
+            const lng = parseFloat(d.lng);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const color = d.flag === "1" ? "#00ff00" : "#ffff00";
+            const marker = new google.maps.Marker({
+              position: { lat, lng },
+              map: map,
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: color,
+                fillOpacity: 1,
+                strokeWeight: 1,
+                strokeColor: "#000000",
+                scale: 6
+              },
+              title: `${d.date} / ${d.acc}`
+            });
+            const infoWindow = new google.maps.InfoWindow({
+              content: `
+                <div><strong>${d.date}</strong></div>
+                <div>사고유형: ${d.acc}</div>
+                <div>상황: ${d.sit}</div>
+                <div>도로: ${d.road}</div>
+                <div>영상: ${d.vid}</div>
+              `
+            });
+            marker.addListener("click", () => {
+              infoWindow.open(map, marker);
+            });
+            uploadedCoordinates.push(marker);
+          });
+        });
+    }
+    window.onload = initMap;
+  </script>
+</body>
+</html>
