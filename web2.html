@@ -526,21 +526,6 @@ document.addEventListener('keydown', function(e) {
             selected: false,
             highlight: false
           });
-// Firebase 영상 링크 생성
-let videoURL = `https://firebasestorage.googleapis.com/v0/b/spsaccc-3aecb.appspot.com/o/video_tesla%2F${encodeURIComponent(videoFile)}?alt=media`;
-
-// InfoWindow에 표시할 내용 저장 (필요 시 객체에 넣거나 나중에 사용)
-let infoContent = `
-  <div><strong>${dateOnly}</strong></div>
-  <div>사고유형: ${accident}</div>
-  <div>상황: ${situation}</div>
-  <div>도로: ${road}</div>
-  ${videoFile ? `<video src="${videoURL}" width="300" controls></video>` : `<div>📁 영상 없음</div>`}
-`;
-
-// 예: uploadedCoordinates에 함께 저장하거나, 마커 생성할 때 사용
-uploadedCoordinates[uploadedCoordinates.length - 1].infoContent = infoContent;
-
         }
         document.getElementById('loadCountLabel').textContent = uploadedCoordinates.length + "개 로드됨";
         updateGrid();
@@ -567,7 +552,7 @@ uploadedCoordinates[uploadedCoordinates.length - 1].infoContent = infoContent;
         }
       }
       if(videoFileName){
-const rawUrl = "https://firebasestorage.googleapis.com/v0/b/spsaccc-3aecb.appspot.com/o/video_tesla%2F" + encodeURIComponent(videoFileName) + "?alt=media";
+        const rawUrl = "https://github.com/hyunq0812/SPS-ACCC/raw/main/Video/" + videoFileName;
         const videoElem = document.createElement("video");
         videoElem.controls = true;
         videoElem.autoplay = true;
