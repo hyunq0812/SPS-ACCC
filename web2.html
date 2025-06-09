@@ -486,54 +486,53 @@ document.addEventListener('keydown', function(e) {
     function openInfoPanel(){ document.getElementById('infoPanel').classList.add('open'); }
     function closeInfoPanel(){ document.getElementById('infoPanel').classList.remove('open'); }
 
-    // 엑셀 로드
-    async function fetchExcelFromGitHub(){
-      try {
-        const url = "https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/main/tesla_data.xlsx"
-        const response = await fetch(url);
-        if(!response.ok) throw new Error("Network response was not ok: " + response.status);
-        const arrayBuffer = await response.arrayBuffer();
-        const wb = XLSX.read(arrayBuffer, {type:'array'});
-        const sheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-        uploadedCoordinates = [];
-        for(let i=5; i<rows.length; i++){
-          const row = rows[i];
-          if(!row) continue;
-          let valA = String(row[0]??"").trim();
-          let valB = String(row[1]??"").trim();
-          if(!valA || !valB) continue;
-          const lat = parseFloat(row[12]??"");
-          const lng = parseFloat(row[13]??"");
-          if(isNaN(lat) || isNaN(lng)) continue;
-          let rawDate = String(row[3]??"").trim();
-          let dateOnly = (rawDate.length>=10)?rawDate.substring(0,10):rawDate;
-          let accident = String(row[17]??"").trim();
-          let situation = String(row[15]??"").trim();
-          let road = String(row[35]??"").trim();
-          let videoFile = String(row[2]??"").trim();
-          uploadedCoordinates.push({
-            lat, lng,
-            date: dateOnly,
-            accident,
-            situation,
-            road,
-            video: videoFile,
-            display: true,
-            markerColor: "#ff0000",
-            selected: false,
-            highlight: false
-          });
-        }
-        document.getElementById('loadCountLabel').textContent = uploadedCoordinates.length + "개 로드됨";
-        updateGrid();
-        refreshMarkers();
-      } catch(err){
-        console.error("GitHub Excel 불러오기 오류:", err);
-        alert("엑셀 로드 오류: " + err.message);
-      }
+// CSV 로드
+async function fetchExcelFromGitHub() {
+  try {
+    const url = "https://raw.githubusercontent.com/hyunq0812/SPS-ACCC/main/tesla_data.csv";
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Network response was not ok: " + response.status);
+    let csvText = await response.text();
+    if (csvText.charCodeAt(0) === 0xFEFF) csvText = csvText.slice(1);
+    const rows = csvText.split('\n').map(line => line.split(','));
+
+    uploadedCoordinates = [];
+    for (let i = 5; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row) continue;
+      let valA = String(row[0] ?? "").trim();
+      let valB = String(row[1] ?? "").trim();
+      if (!valA || !valB) continue;
+      const lat = parseFloat(row[12] ?? "");
+      const lng = parseFloat(row[13] ?? "");
+      if (isNaN(lat) || isNaN(lng)) continue;
+      let rawDate = String(row[3] ?? "").trim();
+      let dateOnly = (rawDate.length >= 10) ? rawDate.substring(0, 10) : rawDate;
+      let accident = String(row[17] ?? "").trim();
+      let situation = String(row[15] ?? "").trim();
+      let road = String(row[35] ?? "").trim();
+      let videoFile = String(row[2] ?? "").trim();
+      uploadedCoordinates.push({
+        lat, lng,
+        date: dateOnly,
+        accident,
+        situation,
+        road,
+        video: videoFile,
+        display: true,
+        markerColor: "#ff0000",
+        selected: false,
+        highlight: false
+      });
     }
+    document.getElementById('loadCountLabel').textContent = uploadedCoordinates.length + "개 로드됨";
+    updateGrid();
+    refreshMarkers();
+  } catch (err) {
+    console.error("GitHub CSV 불러오기 오류:", err);
+    alert("CSV 로드 오류: " + err.message);
+  }
+}
 
     // 상세정보 패널
     function updateInfoPanel(coord){
@@ -550,27 +549,19 @@ document.addEventListener('keydown', function(e) {
           videoFileName += ".mp4";
         }
       }
-if(videoFileName){
-  videoFileName = videoFileName.split(/[/\\]/).pop().trim();
-  if(!videoFileName.toLowerCase().endsWith(".mp4")) {
-    videoFileName += ".mp4";
-  }
-  const firebaseBucket = "spsaccc-3aecb.appspot.com";
-  let storagePath = `video_tesla/${videoFileName}`;
-  let encodedPath = encodeURIComponent(storagePath);
-  let firebaseVideoUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseBucket}/o/${encodedPath}?alt=media`;
-
-  const videoElem = document.createElement("video");
-  videoElem.controls = true;
-  videoElem.autoplay = true;
-  videoElem.style.width = "100%";
-  videoElem.style.height = "300px";
-  const source = document.createElement("source");
-  source.src = firebaseVideoUrl;
-  source.type = "video/mp4";
-  videoElem.appendChild(source);
-  videoContainer.appendChild(videoElem);
-} else {
+      if(videoFileName){
+        const rawUrl = "https://github.com/hyunq0812/SPS-ACCC/raw/main/Video/" + videoFileName;
+        const videoElem = document.createElement("video");
+        videoElem.controls = true;
+        videoElem.autoplay = true;
+        videoElem.style.width = "100%";
+        videoElem.style.height = "300px";
+        const source = document.createElement("source");
+        source.src = rawUrl;
+        source.type = "video/mp4";
+        videoElem.appendChild(source);
+        videoContainer.appendChild(videoElem);
+      } else {
         videoContainer.textContent = "동영상 파일이 없습니다.";
       }
     }
