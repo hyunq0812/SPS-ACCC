@@ -550,19 +550,27 @@ document.addEventListener('keydown', function(e) {
           videoFileName += ".mp4";
         }
       }
-      if(videoFileName){
-        const rawUrl = "https://github.com/hyunq0812/SPS-ACCC/raw/main/Video/" + videoFileName;
-        const videoElem = document.createElement("video");
-        videoElem.controls = true;
-        videoElem.autoplay = true;
-        videoElem.style.width = "100%";
-        videoElem.style.height = "300px";
-        const source = document.createElement("source");
-        source.src = rawUrl;
-        source.type = "video/mp4";
-        videoElem.appendChild(source);
-        videoContainer.appendChild(videoElem);
-      } else {
+    if(videoFileName){
+  videoFileName = videoFileName.split(/[/\\]/).pop().trim();
+  if(!videoFileName.toLowerCase().endsWith(".mp4")) {
+    videoFileName += ".mp4";
+  }
+  const firebaseBucket = "spsaccc-3aecb.appspot.com";
+  let storagePath = `video_tesla/${videoFileName}`;
+  let encodedPath = encodeURIComponent(storagePath);
+  let firebaseVideoUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseBucket}/o/${encodedPath}?alt=media`;
+
+  const videoElem = document.createElement("video");
+  videoElem.controls = true;
+  videoElem.autoplay = true;
+  videoElem.style.width = "100%";
+  videoElem.style.height = "300px";
+  const source = document.createElement("source");
+  source.src = firebaseVideoUrl;
+  source.type = "video/mp4";
+  videoElem.appendChild(source);
+  videoContainer.appendChild(videoElem);
+} else {
         videoContainer.textContent = "동영상 파일이 없습니다.";
       }
     }
